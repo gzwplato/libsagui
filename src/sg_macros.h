@@ -59,6 +59,13 @@
 #endif /* PCRE2_CODE_UNIT_WIDTH */
 #endif /* SG_PATH_ROUTING */
 
+/* used by expr library */
+#ifdef SG_MATH_EXPR_EVAL
+#define expr_alloc sg_alloc
+#define expr_realloc sg_realloc
+#define expr_free sg_free
+#endif /* SG_MATH_EXPR_EVAL */
+
 #ifndef SG__EXTERN
 #if defined(_WIN32) && defined(BUILD_TESTING)
 #define SG__EXTERN __declspec(dllexport) extern

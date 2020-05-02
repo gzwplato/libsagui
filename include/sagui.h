@@ -73,7 +73,7 @@ extern "C" {
 #endif /* __SG_FORMAT */
 
 #define SG_VERSION_MAJOR 3
-#define SG_VERSION_MINOR 0
+#define SG_VERSION_MINOR 1
 #define SG_VERSION_PATCH 0
 #define SG_VERSION_HEX                                                         \
   ((SG_VERSION_MAJOR << 16) | (SG_VERSION_MINOR << 8) | (SG_VERSION_PATCH))
@@ -2057,6 +2057,74 @@ SG_EXTERN int sg_router_dispatch(struct sg_router *router, const char *path,
 /** \} */
 
 #endif /* SG_PATH_ROUTING */
+
+#ifdef SG_MATH_EXPR_EVAL
+
+/**
+ * \ingroup sg_api
+ * \defgroup sg_expr Math expression evaluator
+ * Mathematical expression evaluator.
+ * \{
+ */
+
+/* experimental feature */
+struct sg_expr;
+
+/* experimental feature */
+enum sg_expr_err {
+  SG_EXPR_ERR_NONE,
+  SG_EXPR_ERR_UNKNOWN,
+  SG_EXPR_ERR_UNEXPECTED_NUMBER,
+  SG_EXPR_ERR_UNEXPECTED_WORD,
+  SG_EXPR_ERR_UNEXPECTED_PARENS,
+  SG_EXPR_ERR_MISSING_OPERAND,
+  SG_EXPR_ERR_UNKNOWN_OPERATOR,
+  SG_EXPR_ERR_INVALID_FUNC_NAME,
+  SG_EXPR_ERR_BAD_CALL,
+  SG_EXPR_ERR_BAD_PARENS,
+  SG_EXPR_ERR_TOO_FEW_FUNC_ARGS,
+  SG_EXPR_ERR_FIRST_ARG_IS_NOT_VAR,
+  SG_EXPR_ERR_ALLOCATION_FAILED,
+  SG_EXPR_ERR_BAD_VARIABLE_NAME,
+  SG_EXPR_ERR_BAD_ASSIGNMENT
+};
+
+/* experimental feature */
+SG_EXTERN struct sg_expr *sg_expr_new(void);
+
+/* experimental feature */
+SG_EXTERN void sg_expr_free(struct sg_expr *expr);
+
+/* experimental feature */
+SG_EXTERN int sg_expr_compile(struct sg_expr *expr, const char *str,
+                              size_t len);
+
+/* experimental feature */
+SG_EXTERN double sg_expr_eval(struct sg_expr *expr);
+
+/* experimental feature */
+SG_EXTERN double sg_expr_var(struct sg_expr *expr, const char *name,
+                             size_t len);
+
+/* experimental feature */
+SG_EXTERN int sg_expr_set_var(struct sg_expr *expr, const char *name,
+                              size_t len, double val);
+
+/* experimental feature */
+SG_EXTERN int sg_expr_near(struct sg_expr *expr);
+
+/* experimental feature */
+SG_EXTERN enum sg_expr_err sg_expr_err(struct sg_expr *expr);
+
+/* experimental feature */
+SG_EXTERN const char *sg_expr_strerror(struct sg_expr *expr);
+
+/* experimental feature */
+SG_EXTERN double sg_expr_calc(const char *str, size_t len);
+
+/** \} */
+
+#endif /* SG_MATH_EXPR_EVAL */
 
 #ifdef __cplusplus
 }
