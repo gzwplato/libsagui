@@ -33,19 +33,20 @@
 int main(int argc, const char *argv[]) {
   struct sg_expr *expr;
   const char *s;
+  int ret;
   if (argc != 2) {
     printf("%s <EXPRESSION>\n", argv[0]);
     return EXIT_FAILURE;
   }
   s = argv[1];
   expr = sg_expr_new();
-  if (!expr) {
-    printf("%s: %s (near to %d)\n", s, sg_expr_strerror(expr),
-           sg_expr_near(expr));
-    return EXIT_FAILURE;
+  ret = sg_expr_compile(expr, s, strlen(s));
+  if (ret == 0)
+    printf("Result: %f\n", sg_expr_eval(expr));
+  else {
+    printf("%s: %s", s, sg_expr_strerror(expr));
+    printf("%*s^--- Error near here.\n", sg_expr_near(expr), "");
   }
-  sg_expr_compile(expr, s, strlen(s));
-  printf("Result: %f\n", sg_expr_eval(expr));
   sg_expr_free(expr);
   return EXIT_SUCCESS;
 }

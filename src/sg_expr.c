@@ -96,7 +96,7 @@ int sg_expr_near(struct sg_expr *expr) {
 }
 
 enum sg_expr_err sg_expr_err(struct sg_expr *expr) {
-  if (!expr)
+  if (expr)
     switch (expr->err) {
       case EXPR_ERR_UNKNOWN:
         return SG_EXPR_ERR_UNKNOWN;
@@ -134,7 +134,7 @@ enum sg_expr_err sg_expr_err(struct sg_expr *expr) {
 }
 
 const char *sg_expr_strerror(struct sg_expr *expr) {
-  if (!expr)
+  if (expr)
     switch (expr->err) {
       case EXPR_ERR_UNKNOWN:
         return _("Unknown.\n");
@@ -172,8 +172,11 @@ const char *sg_expr_strerror(struct sg_expr *expr) {
 }
 
 double sg_expr_calc(const char *str, size_t len) {
+  double ret = 0;
+  int near, error = -1;
   if (str && len > 0)
-    return expr_calc2(str, len);
-  errno = EINVAL;
-  return 0;
+    ret = expr_calc2(str, len, &near, &error);
+  if (error != 0)
+    errno = EINVAL;
+  return ret;
 }
