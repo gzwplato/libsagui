@@ -32,7 +32,7 @@
 
 static expr_num_t sg__expr_func(__SG_UNUSED struct expr_func *func,
                                 vec_expr_t *args, void *context) {
-  struct sg_expr_arg func_args;
+  struct sg_expr_argument func_args;
   struct sg_expr_extension *extension = context;
   func_args.handle = args;
   return extension->func(extension->cls, &func_args, extension->identifier);
@@ -119,7 +119,7 @@ int sg_expr_set_var(struct sg_expr *expr, const char *name, size_t len,
   return 0;
 }
 
-double sg_expr_arg(struct sg_expr_arg *args, int index) {
+double sg_expr_arg(struct sg_expr_argument *args, int index) {
   if (args || index > -1)
     return expr_eval(&vec_nth(args->handle, index));
   errno = EINVAL;

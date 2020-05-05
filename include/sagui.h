@@ -2104,10 +2104,10 @@ enum sg_expr_err_type {
 };
 
 /* experimental feature */
-struct sg_expr_arg;
+struct sg_expr_argument;
 
 /* experimental feature */
-typedef double (*sg_expr_func)(void *cls, struct sg_expr_arg *args,
+typedef double (*sg_expr_func)(void *cls, struct sg_expr_argument *args,
                                const char *identifier);
 
 /* experimental feature */
@@ -2139,7 +2139,7 @@ SG_EXTERN int sg_expr_set_var(struct sg_expr *expr, const char *name,
                               size_t len, double val);
 
 /* experimental feature */
-SG_EXTERN double sg_expr_arg(struct sg_expr_arg *args, int index);
+SG_EXTERN double sg_expr_arg(struct sg_expr_argument *args, int index);
 
 /* experimental feature */
 SG_EXTERN int sg_expr_near(struct sg_expr *expr);

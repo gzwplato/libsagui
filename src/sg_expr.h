@@ -39,7 +39,7 @@ struct sg_expr {
   int err;
 };
 
-struct sg_expr_arg {
+struct sg_expr_argument {
   vec_expr_t *handle;
 };
 
