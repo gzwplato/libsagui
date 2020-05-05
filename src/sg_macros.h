@@ -38,7 +38,7 @@
 
 /* used by utstring library */
 #ifndef utstring_oom
-#define utstring_oom() (void) 0
+#define utstring_oom() ((void) 0)
 #endif /* utstring_oom */
 
 /* used by uthash library */
@@ -64,6 +64,8 @@
 #define expr_alloc sg_alloc
 #define expr_realloc sg_realloc
 #define expr_free sg_free
+#define expr_pow sg_pow
+#define expr_fmod sg_fmod
 #endif /* SG_MATH_EXPR_EVAL */
 
 #ifndef SG__EXTERN

@@ -25,9 +25,18 @@
  */
 
 #include <errno.h>
+#include "sg_macros.h"
 #include "sg_utils.h"
 #include "sg_expr.h"
 #include "sagui.h"
+
+static expr_num_t sg__expr_func(__SG_UNUSED struct expr_func *func,
+                                vec_expr_t *args, void *context) {
+  struct sg_expr_arg func_args;
+  struct sg_expr_extension *extension = context;
+  func_args.handle = args;
+  return extension->func(extension->cls, &func_args, extension->identifier);
+}
 
 struct sg_expr *sg_expr_new(void) {
   struct sg_expr *expr = sg_alloc(sizeof(struct sg_expr));
@@ -36,6 +45,7 @@ struct sg_expr *sg_expr_new(void) {
     if (expr->vars)
       return expr;
   }
+  sg_expr_free(expr);
   errno = ENOMEM;
   return NULL;
 }
@@ -48,11 +58,32 @@ void sg_expr_free(struct sg_expr *expr) {
   sg_free(expr);
 }
 
-int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len) {
+int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len,
+                    struct sg_expr_extension *extensions) {
+  struct expr_func *funcs, *func;
+  struct sg_expr_extension *extension;
+  int count;
   if (expr->handle)
     return EALREADY;
+  count = 0;
+  while (extensions) {
+    funcs = sg_realloc(expr->funcs, (count + 1) * sizeof(struct expr_func));
+    if (!funcs) {
+      sg_free(expr->funcs);
+      return ENOMEM;
+    }
+    expr->funcs = funcs;
+    extension = *&extensions + count;
+    if (!extension->func || !extension->identifier)
+      break;
+    func = *&expr->funcs + count;
+    func->f = sg__expr_func;
+    func->name = extension->identifier;
+    func->context = extension;
+    count++;
+  }
   expr->handle =
-    expr_create2(str, len, expr->vars, NULL, &expr->near, &expr->err);
+    expr_create2(str, len, expr->vars, expr->funcs, &expr->near, &expr->err);
   if (!expr->handle)
     return EINVAL;
   return 0;
@@ -88,6 +119,13 @@ int sg_expr_set_var(struct sg_expr *expr, const char *name, size_t len,
   return 0;
 }
 
+double sg_expr_arg(struct sg_expr_arg *args, int index) {
+  if (args || index > -1)
+    return expr_eval(&vec_nth(args->handle, index));
+  errno = EINVAL;
+  return 0;
+}
+
 int sg_expr_near(struct sg_expr *expr) {
   if (expr)
     return expr->near;
@@ -95,7 +133,7 @@ int sg_expr_near(struct sg_expr *expr) {
   return 0;
 }
 
-enum sg_expr_err sg_expr_err(struct sg_expr *expr) {
+enum sg_expr_err_type sg_expr_err(struct sg_expr *expr) {
   if (expr)
     switch (expr->err) {
       case EXPR_ERR_UNKNOWN:
@@ -120,8 +158,6 @@ enum sg_expr_err sg_expr_err(struct sg_expr *expr) {
         return SG_EXPR_ERR_TOO_FEW_FUNC_ARGS;
       case EXPR_ERR_FIRST_ARG_IS_NOT_VAR:
         return SG_EXPR_ERR_FIRST_ARG_IS_NOT_VAR;
-      case EXPR_ERR_ALLOCATION_FAILED:
-        return SG_EXPR_ERR_ALLOCATION_FAILED;
       case EXPR_ERR_BAD_VARIABLE_NAME:
         return SG_EXPR_ERR_BAD_VARIABLE_NAME;
       case EXPR_ERR_BAD_ASSIGNMENT:
@@ -158,8 +194,6 @@ const char *sg_expr_strerror(struct sg_expr *expr) {
         return _("Too few function arguments.\n");
       case EXPR_ERR_FIRST_ARG_IS_NOT_VAR:
         return _("First argument is not a variable.\n");
-      case EXPR_ERR_ALLOCATION_FAILED:
-        return _("Allocation failed.\n");
       case EXPR_ERR_BAD_VARIABLE_NAME:
         return _("Bad variable name.\n");
       case EXPR_ERR_BAD_ASSIGNMENT:

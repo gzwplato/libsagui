@@ -112,6 +112,12 @@ typedef void *(*sg_realloc_func)(void *ptr, size_t size);
  */
 typedef void (*sg_free_func)(void *ptr);
 
+/* experimental */
+typedef double (*sg_pow_func)(double x, double y);
+
+/* experimental */
+typedef double (*sg_fmod_func)(double x, double y);
+
 /**
  * Callback signature used by functions that handle errors.
  * \param[out] cls User-defined closure.
@@ -231,6 +237,15 @@ SG_EXTERN void *sg_realloc(void *ptr, size_t size) __SG_MALLOC;
  */
 SG_EXTERN void sg_free(void *ptr);
 
+/* experimental */
+SG_EXTERN int sg_math_set(sg_pow_func pow_func, sg_fmod_func fmod_func);
+
+/* experimental */
+SG_EXTERN double sg_pow(double x, double y);
+
+/* experimental */
+SG_EXTERN double sg_fmod(double x, double y);
+
 /**
  * Returns string describing an error number.
  * \param[in] errnum Error number.
@@ -255,7 +270,7 @@ SG_EXTERN bool sg_is_post(const char *method);
  * \retval NULL If no memory space is available.
  * \warning The caller must free the returned value.
  */
-SG_EXTERN char *sg_extract_entrypoint(const char *path);
+SG_EXTERN char *sg_extract_entrypoint(const char *path) __SG_MALLOC;
 
 /**
  * Returns the system temporary directory.
@@ -263,7 +278,7 @@ SG_EXTERN char *sg_extract_entrypoint(const char *path);
  * \retval NULL If no memory space is available.
  * \warning The caller must free the returned value.
  */
-SG_EXTERN char *sg_tmpdir(void);
+SG_EXTERN char *sg_tmpdir(void) __SG_MALLOC;
 
 /**
  * Indicates the end-of-read processed in #sg_httpres_sendstream().
@@ -2071,7 +2086,7 @@ SG_EXTERN int sg_router_dispatch(struct sg_router *router, const char *path,
 struct sg_expr;
 
 /* experimental feature */
-enum sg_expr_err {
+enum sg_expr_err_type {
   SG_EXPR_ERR_NONE,
   SG_EXPR_ERR_UNKNOWN,
   SG_EXPR_ERR_UNEXPECTED_NUMBER,
@@ -2084,20 +2099,33 @@ enum sg_expr_err {
   SG_EXPR_ERR_BAD_PARENS,
   SG_EXPR_ERR_TOO_FEW_FUNC_ARGS,
   SG_EXPR_ERR_FIRST_ARG_IS_NOT_VAR,
-  SG_EXPR_ERR_ALLOCATION_FAILED,
   SG_EXPR_ERR_BAD_VARIABLE_NAME,
   SG_EXPR_ERR_BAD_ASSIGNMENT
 };
 
 /* experimental feature */
-SG_EXTERN struct sg_expr *sg_expr_new(void);
+struct sg_expr_arg;
+
+/* experimental feature */
+typedef double (*sg_expr_func)(void *cls, struct sg_expr_arg *args,
+                               const char *identifier);
+
+/* experimental feature */
+struct sg_expr_extension {
+  sg_expr_func func;
+  const char *identifier;
+  void *cls;
+};
+
+/* experimental feature */
+SG_EXTERN struct sg_expr *sg_expr_new(void) __SG_MALLOC;
 
 /* experimental feature */
 SG_EXTERN void sg_expr_free(struct sg_expr *expr);
 
 /* experimental feature */
-SG_EXTERN int sg_expr_compile(struct sg_expr *expr, const char *str,
-                              size_t len);
+SG_EXTERN int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len,
+                              struct sg_expr_extension *extensions);
 
 /* experimental feature */
 SG_EXTERN double sg_expr_eval(struct sg_expr *expr);
@@ -2111,10 +2139,13 @@ SG_EXTERN int sg_expr_set_var(struct sg_expr *expr, const char *name,
                               size_t len, double val);
 
 /* experimental feature */
+SG_EXTERN double sg_expr_arg(struct sg_expr_arg *args, int index);
+
+/* experimental feature */
 SG_EXTERN int sg_expr_near(struct sg_expr *expr);
 
 /* experimental feature */
-SG_EXTERN enum sg_expr_err sg_expr_err(struct sg_expr *expr);
+SG_EXTERN enum sg_expr_err_type sg_expr_err(struct sg_expr *expr);
 
 /* experimental feature */
 SG_EXTERN const char *sg_expr_strerror(struct sg_expr *expr);

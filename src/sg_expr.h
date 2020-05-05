@@ -29,12 +29,18 @@
 
 #include "sg_macros.h"
 #include "expr.h"
+#include "sagui.h"
 
 struct sg_expr {
   struct expr *handle;
   struct expr_var_list *vars;
+  struct expr_func *funcs;
   int near;
   int err;
+};
+
+struct sg_expr_arg {
+  vec_expr_t *handle;
 };
 
 #endif /* SG_EXPR_H */

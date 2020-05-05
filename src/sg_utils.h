@@ -41,6 +41,11 @@ struct sg__memory_manager {
   sg_free_func free;
 };
 
+struct sg__math_manager {
+  sg_pow_func pow;
+  sg_fmod_func fmod;
+};
+
 #ifdef _WIN32
 #ifndef PATH_MAX
 #define PATH_MAX _MAX_PATH
