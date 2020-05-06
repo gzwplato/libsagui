@@ -55,6 +55,7 @@ void sg_expr_free(struct sg_expr *expr) {
     return;
   expr_destroy(expr->handle, expr->vars);
   sg_free(expr->vars);
+  sg_free(expr->funcs);
   sg_free(expr);
 }
 
@@ -79,6 +80,7 @@ int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len,
     func = *&expr->funcs + count;
     func->f = sg__expr_func;
     func->name = extension->identifier;
+    func->cleanup = NULL;
     func->context = extension;
     count++;
   }
@@ -90,8 +92,10 @@ int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len,
 }
 
 double sg_expr_eval(struct sg_expr *expr) {
-  if (!expr || !expr->handle)
-    return EINVAL;
+  if (!expr || !expr->handle) {
+    errno = EINVAL;
+    return 0;
+  }
   return expr_eval(expr->handle);
 }
 
