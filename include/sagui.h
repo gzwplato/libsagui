@@ -2128,6 +2128,9 @@ SG_EXTERN int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len,
                               struct sg_expr_extension *extensions);
 
 /* experimental feature */
+SG_EXTERN int sg_expr_clear(struct sg_expr *expr);
+
+/* experimental feature */
 SG_EXTERN double sg_expr_eval(struct sg_expr *expr);
 
 /* experimental feature */

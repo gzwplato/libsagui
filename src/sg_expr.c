@@ -30,6 +30,15 @@
 #include "sg_expr.h"
 #include "sagui.h"
 
+static void sg__expr_clear(struct sg_expr *expr) {
+  if (!expr->handle)
+    return;
+  expr_destroy(expr->handle, expr->vars);
+  sg_free(expr->funcs);
+  expr->funcs = NULL;
+  expr->handle = NULL;
+}
+
 static expr_num_t sg__expr_func(__SG_UNUSED struct expr_func *func,
                                 vec_expr_t *args, void *context) {
   struct sg_expr_argument func_args;
@@ -53,9 +62,8 @@ struct sg_expr *sg_expr_new(void) {
 void sg_expr_free(struct sg_expr *expr) {
   if (!expr)
     return;
-  expr_destroy(expr->handle, expr->vars);
+  sg__expr_clear(expr);
   sg_free(expr->vars);
-  sg_free(expr->funcs);
   sg_free(expr);
 }
 
@@ -88,6 +96,13 @@ int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len,
     expr_create2(str, len, expr->vars, expr->funcs, &expr->near, &expr->err);
   if (!expr->handle)
     return EINVAL;
+  return 0;
+}
+
+int sg_expr_clear(struct sg_expr *expr) {
+  if (!expr)
+    return EINVAL;
+  sg__expr_clear(expr);
   return 0;
 }
 
