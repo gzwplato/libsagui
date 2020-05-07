@@ -42,9 +42,11 @@ static void sg__expr_clear(struct sg_expr *expr) {
 static expr_num_t sg__expr_func(__SG_UNUSED struct expr_func *func,
                                 vec_expr_t *args, void *context) {
   struct sg_expr_argument func_args;
-  struct sg_expr_extension *extension = context;
+  struct sg_expr_extension *extension;
+  extension = context;
   func_args.handle = args;
-  return extension->func(extension->cls, &func_args, extension->identifier);
+  return extension->func(extension->cls, (args->len > 0) ? &func_args : NULL,
+                         extension->identifier);
 }
 
 struct sg_expr *sg_expr_new(void) {
