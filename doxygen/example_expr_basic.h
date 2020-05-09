@@ -24,12 +24,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef EXAMPLE_EXPR_H
-#define EXAMPLE_EXPR_H
+#ifndef EXAMPLE_EXPR_BASIC_H
+#define EXAMPLE_EXPR_BASIC_H
 
 /**
- * \example example_expr.c
+ * \example example_expr_basic.c
  * Simple example using the mathematical expression evaluator.
  */
 
-#endif /* EXAMPLE_EXPR_H */
+#endif /* EXAMPLE_EXPR_BASIC_H */

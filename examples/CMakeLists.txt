@@ -87,7 +87,8 @@ if(SG_BUILD_EXAMPLES)
       router_srv)
   endif()
   if(SG_MATH_EXPR_EVAL)
-    list(APPEND SG_EXAMPLES expr)
+    list(APPEND SG_EXAMPLES expr_basic)
+    list(APPEND SG_EXAMPLES expr_full)
   endif()
   set(SG_EXAMPLES
       ${SG_EXAMPLES}

@@ -26,21 +26,28 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <sagui.h>
 
 /* NOTE: Error checking has been omitted to make it clear. */
 
-int main(int argc, const char *argv[]) {
+static double my_mul(__SG_UNUSED void *cls, struct sg_expr_argument *args,
+                     __SG_UNUSED const char *identifier) {
+  if (!args)
+    return NAN;
+  return sg_expr_arg(args, 0) * sg_expr_arg(args, 1);
+}
+
+int main(void) {
   struct sg_expr *expr;
-  const char *s;
+  const char *s = "$(sum, $1 + $2), x = 2.3, y = 4.5, mul(6.7, sum(x, y))";
+  struct sg_expr_extension extensions[] = {
+    {.func = my_mul, .identifier = "mul", .cls = NULL},
+    {.func = NULL, .identifier = NULL, .cls = NULL},
+  };
   int ret;
-  if (argc != 2) {
-    printf("%s <EXPRESSION>\n", argv[0]);
-    return EXIT_FAILURE;
-  }
-  s = argv[1];
   expr = sg_expr_new();
-  ret = sg_expr_compile(expr, s, strlen(s));
+  ret = sg_expr_compile(expr, s, strlen(s), extensions);
   if (ret == 0)
     printf("Result: %f\n", sg_expr_eval(expr));
   else {

@@ -84,10 +84,10 @@ int sg_expr_compile(struct sg_expr *expr, const char *str, size_t len,
       return ENOMEM;
     }
     expr->funcs = funcs;
-    extension = *&extensions + count;
     func = *&expr->funcs + count;
     memset(func, 0, sizeof(struct expr_func));
     func->f = sg__expr_func;
+    extension = *&extensions + count;
     if (!extension->func || !extension->identifier)
       break;
     func->name = extension->identifier;
