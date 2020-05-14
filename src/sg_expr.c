@@ -157,8 +157,6 @@ int sg_expr_near(struct sg_expr *expr) {
 enum sg_expr_err_type sg_expr_err(struct sg_expr *expr) {
   if (expr)
     switch (expr->err) {
-      case EXPR_ERR_UNKNOWN:
-        return SG_EXPR_ERR_UNKNOWN;
       case EXPR_ERR_UNEXPECTED_NUMBER:
         return SG_EXPR_ERR_UNEXPECTED_NUMBER;
       case EXPR_ERR_UNEXPECTED_WORD:
@@ -171,8 +169,6 @@ enum sg_expr_err_type sg_expr_err(struct sg_expr *expr) {
         return SG_EXPR_ERR_UNKNOWN_OPERATOR;
       case EXPR_ERR_INVALID_FUNC_NAME:
         return SG_EXPR_ERR_INVALID_FUNC_NAME;
-      case EXPR_ERR_BAD_CALL:
-        return SG_EXPR_ERR_BAD_CALL;
       case EXPR_ERR_BAD_PARENS:
         return SG_EXPR_ERR_BAD_PARENS;
       case EXPR_ERR_TOO_FEW_FUNC_ARGS:
@@ -187,7 +183,7 @@ enum sg_expr_err_type sg_expr_err(struct sg_expr *expr) {
         break;
     }
   errno = EINVAL;
-  return SG_EXPR_ERR_NONE;
+  return SG_EXPR_ERR_UNKNOWN;
 }
 
 const char *sg_expr_strerror(struct sg_expr *expr) {

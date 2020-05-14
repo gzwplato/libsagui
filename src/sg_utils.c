@@ -283,11 +283,11 @@ int sg_math_set(sg_pow_func pow_func, sg_fmod_func fmod_func) {
   return 0;
 }
 
-double sg_pow(double x, double y) {
+double sg__pow(double x, double y) {
   return sg__math.pow(x, y);
 }
 
-double sg_fmod(double x, double y) {
+double sg__fmod(double x, double y) {
   return sg__math.fmod(x, y);
 }
 

@@ -29,6 +29,9 @@
 #include <math.h>
 #include <sagui.h>
 
+#define DUMMY_EXPR                                                             \
+  "$(sum, $1 + $2), x = 2.3, y = 4.5, mul(6.7, sum(x, y)) + 0.11"
+
 /* NOTE: Error checking has been omitted to make it clear. */
 
 static double my_mul(__SG_UNUSED void *cls, struct sg_expr_argument *args,
@@ -38,13 +41,13 @@ static double my_mul(__SG_UNUSED void *cls, struct sg_expr_argument *args,
   return sg_expr_arg(args, 0) * sg_expr_arg(args, 1);
 }
 
-int main(void) {
-  struct sg_expr *expr;
-  const char *s = "$(sum, $1 + $2), x = 2.3, y = 4.5, mul(6.7, sum(x, y))";
+int main(int argc, const char *argv[]) {
   struct sg_expr_extension extensions[] = {
     {.func = my_mul, .identifier = "mul", .cls = NULL},
     {.func = NULL, .identifier = NULL, .cls = NULL},
   };
+  struct sg_expr *expr;
+  const char *s = argc == 2 ? argv[1] : DUMMY_EXPR;
   int ret;
   expr = sg_expr_new();
   ret = sg_expr_compile(expr, s, strlen(s), extensions);

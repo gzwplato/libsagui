@@ -112,10 +112,22 @@ typedef void *(*sg_realloc_func)(void *ptr, size_t size);
  */
 typedef void (*sg_free_func)(void *ptr);
 
-/* experimental */
+/**
+ * Callback signature used to override the function which returns the value of
+ * `x` raised to the power of `y`.
+ * \param[in] x Floating point base value.
+ * \param[in] y Floating point power value.
+ * \return Value of `x` raised to the power of `y`.
+ */
 typedef double (*sg_pow_func)(double x, double y);
 
-/* experimental */
+/**
+ * Callback signature used to override the function which returns the remainder
+ * of `x` divided by `y`.
+ * \param[in] x Floating point value with the division numerator.
+ * \param[in] y Floating point value with the division denominator.
+ * \return Remainder of `x` divided by `y`.
+ */
 typedef double (*sg_fmod_func)(double x, double y);
 
 /**
@@ -237,14 +249,18 @@ SG_EXTERN void *sg_realloc(void *ptr, size_t size) __SG_MALLOC;
  */
 SG_EXTERN void sg_free(void *ptr);
 
-/* experimental */
+/**
+ * Overrides the standard functions [pow(3)](https://linux.die.net/man/3/pow)
+ * and [fmod(3)](https://linux.die.net/man/3/fmod) set by default in the math
+ * manager.
+ * \param[in] pow_func Reference to override the function `pow()`.
+ * \param[in] fmod_func Reference to override the function `fmod()`.
+ * \retval 0 Success.
+ * \retval EINVAL Invalid argument.
+ * \note It must be called before any other Sagui function or after all
+ * resources have been freed.
+ */
 SG_EXTERN int sg_math_set(sg_pow_func pow_func, sg_fmod_func fmod_func);
-
-/* experimental */
-SG_EXTERN double sg_pow(double x, double y);
-
-/* experimental */
-SG_EXTERN double sg_fmod(double x, double y);
 
 /**
  * Returns string describing an error number.
@@ -937,7 +953,7 @@ SG_EXTERN const void *sg_httpreq_client(struct sg_httpreq *req);
 #ifdef SG_HTTPS_SUPPORT
 
 /**
- * Returns the GnuTLS session handle.
+ * Returns the [GnuTLS](https://gnutls.org) session handle.
  * \param[in] req Request handle.
  * \retval 0 Success.
  * \retval EINVAL Invalid argument.
@@ -957,7 +973,7 @@ SG_EXTERN void *sg_httpreq_tls_session(struct sg_httpreq *req);
  * \retval EINVAL Invalid argument.
  * \retval ENOMEM Out of memory.
  * \retval E<ERROR> Any returned error from the OS threading library.
- * \note Isolated requestes will not time out.
+ * \note Isolated requests will not time out.
  * \note While a request is isolated, the library will not detect disconnects
  * by the client.
  */
@@ -1354,10 +1370,11 @@ SG_EXTERN int sg_httpres_clear(struct sg_httpres *res);
  * \param[in] err_cb Callback to handle server errors.
  * \param[in] cls User-defined closure.
  * \return New HTTP server handle.
- * \retval NULL If no memory space is available.
- * \retval NULL If the \pr{req_cb} or \pr{err_cb} is null and sets the `errno`
- * to `EINVAL`.
- * \retval NULL If a threading operation fails and sets its error to `errno`.
+ * \retval NULL
+ *  - If no memory space is available.
+ *  - If the \pr{req_cb} or \pr{err_cb} is null and sets the `errno` to
+ *    `EINVAL`.
+ *  - If a threading operation fails and sets its error to `errno`.
  */
 SG_EXTERN struct sg_httpsrv *sg_httpsrv_new2(sg_httpauth_cb auth_cb,
                                              sg_httpreq_cb req_cb,
@@ -1369,8 +1386,9 @@ SG_EXTERN struct sg_httpsrv *sg_httpsrv_new2(sg_httpauth_cb auth_cb,
  * \param[in] cb Callback to handle requests and responses.
  * \param[in] cls User-defined closure.
  * \return New HTTP server handle.
- * \retval NULL If the \pr{cb} is null and sets the `errno` to `EINVAL`.
- * \retval NULL If a threading operation fails and sets its error to `errno`.
+ * \retval NULL
+ *  - If the \pr{cb} is null and sets the `errno` to `EINVAL`.
+ *  - If a threading operation fails and sets its error to `errno`.
  */
 SG_EXTERN struct sg_httpsrv *sg_httpsrv_new(sg_httpreq_cb cb,
                                             void *cls) __SG_MALLOC;
@@ -1843,9 +1861,9 @@ SG_EXTERN const char *sg_route_rawpattern(struct sg_route *route);
  * Returns the route pattern.
  * \param[in] route Route handle.
  * \return Pattern as null-terminated string.
- * \retval NULL If \pr{route} is null and sets the `errno` to `EINVAL`.
- * \retval NULL If no memory space is available and sets the `errno` to
- * `ENOMEM`.
+ * \retval NULL
+ *  - If \pr{route} is null and sets the `errno` to `EINVAL`.
+ *  - If no memory space is available and sets the `errno` to `ENOMEM`.
  * \warning The caller must free the returned value.
  */
 SG_EXTERN char *sg_route_pattern(struct sg_route *route) __SG_MALLOC;
@@ -2082,45 +2100,87 @@ SG_EXTERN int sg_router_dispatch(struct sg_router *router, const char *path,
  * \{
  */
 
-/* experimental feature */
+/**
+ * Handle for the mathematical expression evaluator.
+ * \struct sg_expr
+ */
 struct sg_expr;
 
-/* experimental feature */
+/**
+ * Possible error types returned by the mathematical expression evaluator.
+ * \enum sg_expr_err_type
+ */
 enum sg_expr_err_type {
-  SG_EXPR_ERR_NONE,
+  /** Error not related to evaluation, e.g. `EINVAL`. */
   SG_EXPR_ERR_UNKNOWN,
+  /** Unexpected number, e.g. `"(1+2)3"`. */
   SG_EXPR_ERR_UNEXPECTED_NUMBER,
+  /** Unexpected word, e.g. `"(1+2)x"`. */
   SG_EXPR_ERR_UNEXPECTED_WORD,
+  /** Unexpected parenthesis, e.g. `"1(2+3)"`. */
   SG_EXPR_ERR_UNEXPECTED_PARENS,
+  /** Missing expected operand, e.g. `"0^+1"`. */
   SG_EXPR_ERR_MISSING_OPERAND,
+  /** Unknown operator, e.g. `"(1+2)."`. */
   SG_EXPR_ERR_UNKNOWN_OPERATOR,
+  /** Invalid function name, e.g. `"unknownfunc()"`. */
   SG_EXPR_ERR_INVALID_FUNC_NAME,
-  SG_EXPR_ERR_BAD_CALL,
+  /** Bad parenthesis, e.g. `"(1+2"`. */
   SG_EXPR_ERR_BAD_PARENS,
+  /** Too few arguments passed to a macro, e.g. `"$()"`. */
   SG_EXPR_ERR_TOO_FEW_FUNC_ARGS,
+  /** First macro argument is not variable, e.g. `"$(1)"`. */
   SG_EXPR_ERR_FIRST_ARG_IS_NOT_VAR,
+  /** Bad variable name, e.g. `"2.3.4"`. */
   SG_EXPR_ERR_BAD_VARIABLE_NAME,
+  /** Bad assignment, e.g. `"2=3"`. */
   SG_EXPR_ERR_BAD_ASSIGNMENT
 };
 
-/* experimental feature */
+/**
+ * Handle to access a user-defined function registered in the mathematical
+ * expression extension.
+ * \struct sg_expr_argument
+ */
 struct sg_expr_argument;
 
-/* experimental feature */
+/**
+ * Callback signature to specify a function at build time to be executed at
+ * run time in a mathematical expression.
+ * \param[out] cls User-defined closure.
+ * \param[out] args Floating-point arguments passed to the function.
+ * \param[out] identifier Null-terminated string to identify the function.
+ * \return Floating-point value calculated at build time to be used at run time
+ * in a mathematical expression.
+ */
 typedef double (*sg_expr_func)(void *cls, struct sg_expr_argument *args,
                                const char *identifier);
 
-/* experimental feature */
+/**
+ * Handle for the mathematical expression evaluator extension.
+ * \struct sg_expr_extension
+ */
 struct sg_expr_extension {
+  /** User-defined function to be executed at run time in a mathematical
+   * expression. */
   sg_expr_func func;
+  /** Null-terminated to identify the function. */
   const char *identifier;
+  /** User-defined closure. */
   void *cls;
 };
 
-/* experimental feature */
+/* Creates a new mathematical expression evaluator handle.
+ * \return New mathematical expression evaluator handle.
+ * \retval NULL If no memory space is available and sets the `errno` to `ENOMEM`.
+ */
 SG_EXTERN struct sg_expr *sg_expr_new(void) __SG_MALLOC;
 
-/* experimental feature */
+/**
+ * Frees the mathematical expression evaluator handle previously allocated by
+ * #sg_expr_new().
+ * \param[in] expr Expression evaluator handle.
+ */
 SG_EXTERN void sg_expr_free(struct sg_expr *expr);
 
 /* experimental feature */

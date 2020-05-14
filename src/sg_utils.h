@@ -74,6 +74,10 @@ SG__EXTERN char *sg__basename(const char *path);
 
 SG__EXTERN char *sg__strdup(const char *str);
 
+SG__EXTERN double sg__pow(double x, double y);
+
+SG__EXTERN double sg__fmod(double x, double y);
+
 /* Converts US-ASCII string to lower case. */
 SG__EXTERN void sg__toasciilower(char *str);
 
